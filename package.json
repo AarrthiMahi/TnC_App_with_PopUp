@@ -1,0 +1,83 @@
+{
+  "name": "hp-buysell-tc",
+  "version": "1.0.0",
+  "dependencies": {
+    "@cap-js/postgres": "^3",
+    "@sap/cds": "^10",
+    "pdfjs-dist": "^6.2.108"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^3",
+    "cds-plugin-ui5": "^0.17.0"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch-tcadmin": "cds watch --open com.hp.buysell.tcadmin.tcadmin/index.html?sap-ui-xx-viewCache=false --livereload false"
+  },
+  "private": true,
+  "cds": {
+    "requires": {
+      "auth": {
+        "[development]": {
+          "kind": "mocked",
+          "users": {
+            "customer@test.com": {
+              "password": "test",
+              "attr": {
+                "profile": "C"
+              }
+            },
+            "supplier@test.com": {
+              "password": "test",
+              "attr": {
+                "profile": "S"
+              }
+            },
+            "dual@test.com": {
+              "password": "test",
+              "attr": {
+                "profile": "CS"
+              }
+            },
+            "hpuser@test.com": {
+              "password": "test",
+              "attr": {
+                "profile": "HP"
+              }
+            },
+            "admin@test.com": {
+              "password": "test",
+              "roles": [
+                "TC_Viewer",
+                "TC_Admin"
+              ],
+              "attr": {
+                "profile": "HP",
+                "email": "admin@test.com"
+              }
+            },
+            "dev@test.com": {
+              "password": "test",
+              "roles": [
+                "TC_Viewer",
+                "TC_Admin"
+              ],
+              "attr": {
+                "profile": "C",
+                "email": "dev@test.com",
+                "firstName": "Dev",
+                "lastName": "User"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "workspaces": [
+    "app/*"
+  ],
+  "sapux": [
+    "app/tcadmin"
+  ]
+}

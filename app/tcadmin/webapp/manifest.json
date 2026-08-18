@@ -1,0 +1,205 @@
+{
+  "_version": "1.86.0",
+  "sap.app": {
+    "id": "com.hp.buysell.tcadmin.tcadmin",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:lrop",
+      "version": "1.31.0",
+      "toolsId": "92f3f2de-2263-4b6f-b07f-bacca0482a20"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/tc/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.151.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {},
+        "sap.fe.core": {},
+        "sap.ui.unified": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.hp.buysell.tcadmin.tcadmin.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "@i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "uri": "i18n/i18n.properties"
+      }
+    },
+    "resources": {
+      "css": []
+    },
+    "routing": {
+      "config": {},
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "ActionLogList",
+          "target": "ActionLogList"
+        },
+        {
+          "pattern": "ActionLog({key}):?query:",
+          "name": "ActionLogObjectPage",
+          "target": "ActionLogObjectPage"
+        },
+        {
+          "name": "VersionsVersionsPage",
+          "pattern": "Versions({VersionsKey}):?query:",
+          "target": "VersionsVersionsPage"
+        }
+      ],
+      "targets": {
+        "ActionLogList": {
+          "type": "Component",
+          "id": "ActionLogList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ActionLog",
+              "variantManagement": "Page",
+              "navigation": {
+                "ActionLog": {
+                  "detail": {
+                    "route": "ActionLogObjectPage"
+                  }
+                },
+                "Versions": {
+                  "detail": {
+                    "route": "VersionsVersionsPage"
+                  }
+                }
+              },
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable"
+                  }
+                },
+                "/Versions/@com.sap.vocabularies.UI.v1.LineItem#tableView": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable"
+                  },
+                  "actions": {
+                    "CreateNewTCVersion": {
+                      "text": "Create New T&C Version",
+                      "press": "com.hp.buysell.tcadmin.tcadmin.ext.controller.ListReport.onCreateNewTCVersion",
+                      "requiresSelection": false
+                    }
+                  }
+                },
+                "/Changes/@com.sap.vocabularies.UI.v1.LineItem#changeLogView": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable"
+                  }
+                }
+              },
+              "views": {
+                "paths": [
+                  {
+                    "key": "tableView",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#tableView"
+                  },
+                  {
+                    "key": "tableView1",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#tableView",
+                    "entitySet": "Versions"
+                  },
+                  {
+                    "key": "changeLogView",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#changeLogView",
+                    "entitySet": "Changes"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "ActionLogObjectPage": {
+          "type": "Component",
+          "id": "ActionLogObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/ActionLog"
+            }
+          }
+        },
+        "VersionsVersionsPage": {
+          "type": "Component",
+          "id": "VersionsVersionsPage",
+          "name": "sap.fe.core.fpm",
+          "options": {
+            "settings": {
+              "navigation": {},
+              "contextPath": "/Versions",
+              "viewName": "com.hp.buysell.tcadmin.tcadmin.ext.view.Versions"
+            }
+          }
+        }
+      }
+    }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  },
+  "sap.fe": {
+    "app": {
+      "enableLazyLoading": true
+    }
+  }
+}

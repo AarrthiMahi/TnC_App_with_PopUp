@@ -1,0 +1,33 @@
+<mvc:View
+    controllerName="com.hp.buysell.tcpopup.controller.App"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <App>
+
+        <Page
+            title="HP Buy-Sell Collaboration Portal">
+
+            <content>
+
+                <VBox
+                    alignItems="Center"
+                    justifyContent="Center"
+                    height="100%">
+
+                    <Title
+                        text="Portal Home"
+                        level="H2" />
+
+                    <Text
+                        text="T&amp;C validation runs automatically after login." />
+
+                </VBox>
+
+            </content>
+
+        </Page>
+
+    </App>
+
+</mvc:View>

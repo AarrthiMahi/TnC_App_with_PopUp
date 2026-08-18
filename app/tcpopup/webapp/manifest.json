@@ -1,0 +1,36 @@
+{
+  "_version": "1.80.0",
+
+  "sap.app": {
+    "id": "com.hp.buysell.tcpopup",
+    "type": "application",
+    "title": "Terms & Conditions"
+  },
+
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+
+  "sap.ui5": {
+
+    "rootView": {
+      "viewName": "com.hp.buysell.tcpopup.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "app"
+    },
+
+    "dependencies": {
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {}
+      }
+    }
+
+  }
+}

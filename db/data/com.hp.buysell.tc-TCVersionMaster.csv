@@ -1,0 +1,5 @@
+ID;tcType;tcSubType;versionNumber;effectiveDate;documentPath;fileName;status;uploadedBy;uploadedAt
+11111111-1111-1111-1111-111111111111;SALES;CUSTOMER_PORTFOLIO_TERMS;v1;2026-08-18T00:00:00Z;sample/sales/customer-portfolio-v1.pdf;Customer_Portfolio_Terms_v1.pdf;ACTIVE;admin@hp.com;2026-08-18T00:00:00Z
+22222222-2222-2222-2222-222222222222;SALES;MARKETPLACE_TERMS_OF_USE;v1;2026-08-18T00:00:00Z;sample/sales/marketplace-v1.pdf;Sales_Marketplace_Terms_v1.pdf;ACTIVE;admin@hp.com;2026-08-18T00:00:00Z
+33333333-3333-3333-3333-333333333333;PURCHASING;POTAC;v1;2026-08-18T00:00:00Z;sample/purchasing/potac-v1.pdf;POTAC_v1.pdf;ACTIVE;admin@hp.com;2026-08-18T00:00:00Z
+44444444-4444-4444-4444-444444444444;PURCHASING;MARKETPLACE_TERMS_OF_USE;v1;2026-08-18T00:00:00Z;sample/purchasing/marketplace-v1.pdf;Purchasing_Marketplace_Terms_v1.pdf;ACTIVE;admin@hp.com;2026-08-18T00:00:00Z
