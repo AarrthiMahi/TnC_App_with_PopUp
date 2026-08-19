@@ -170,69 +170,34 @@ sap.ui.define([
 
                 if (!oCurrent) { return; }
 
-                const aDocumentContainers =
-                    oCurrent.subTypes.map(
+                const aDocumentContainers = oCurrent.subTypes.map(
                         (oSubType) => {
-
-                            const sTitle =
-                                oSubType.tcSubType
-                                    .replace(/_/g, " ");
-
-                            const sDocumentUrl =
-                                oSubType.documentPath;
-
+                            const sTitle = oSubType.tcSubType.replace(/_/g, " ");
+                            const sDocumentUrl = oSubType.documentPath;
 
                             return new VBox({
-
                                 width: "calc(50% - 1.2rem)",
                                 height: "100%",
 
                                 items: [
-
                                     new Toolbar({
-
                                         content: [
-
-                                            new Title({
-                                                text: sTitle,
-                                                level: "H4"
-                                            }),
-
+                                            new Title({ text: sTitle, level: "H4" }),
                                             new ToolbarSpacer(),
-
                                             new Button({
+                                                icon: "sap-icon://download",
+                                                tooltip: "Download",
+                                                type: "Transparent",
 
-                                                icon:
-                                                    "sap-icon://download",
-
-                                                tooltip:
-                                                    "Download",
-
-                                                type:
-                                                    "Transparent",
-
-                                                press: () => {
-
-                                                    this._downloadDocument(
-                                                        oSubType
-                                                    );
-
-                                                }
-
+                                                press: () => { this._downloadDocument( oSubType ); }
                                             })
-
                                         ]
-
                                     }),
 
-
-                                    new HTML({
-
-                                        content:
-                                            '<div ' +
-                                            'id="pdf_' +
-                                            oSubType.tcVersionId.replace(/-/g, "") +
-                                            '" ' +
+                                    new HTML({ content: 
+                                            '<div ' + 
+                                            'id="pdf_' + 
+                                            oSubType.tcVersionId.replace(/-/g, "") +                                            '" ' +
                                             'style="' +
                                             'height:calc(100vh - 11rem);' +
                                             'width:100%;' +
@@ -243,123 +208,57 @@ sap.ui.define([
                                             'background:#ffffff;' +
                                             '">' +
                                             '</div>'
-
                                     })
-
                                 ]
-
                             });
-
                         }
                     );
 
-
                 this._dialog = new Dialog({
-
                     title: " Terms & Conditions",
-
                     stretch: true,
-
                     horizontalScrolling: false,
                     verticalScrolling: false,
-
-                    escapeHandler: function () {
-                        // Prevent ESC from closing
-                    },
+                    // Prevent ESC from closing
+                    escapeHandler: function () { },
 
                     afterOpen: async () => {
-
                         for (const oSubType of oCurrent.subTypes) {
-
-                            await this._renderPdf(
-                                oSubType,
-                                "pdf_" +
-                                oSubType.tcVersionId.replace(/-/g, "")
-                            );
-
+                            await this._renderPdf( oSubType, "pdf_" + oSubType.tcVersionId.replace(/-/g, "") );
                         }
-
                     },
 
-
                     content: [
-
                         new VBox({
-
                             width: "100%",
                             height: "100%",
-
                             items: [
-
-                                new Text({
-
-                                    text:
-                                        "Please review and accept all applicable T&C documents."
-
-                                }).addStyleClass("sapUiSmallMargin"),
-
-
+                                
                                 new HBox({
-
                                     width: "100%",
                                     fitContainer: true,
                                     wrap: "NoWrap",
 
-                                    justifyContent:
-                                        "SpaceBetween",
-
-                                    alignItems:
-                                        "Stretch",
-
-                                    items:
-                                        aDocumentContainers
-
+                                    justifyContent: "SpaceBetween",
+                                    alignItems: "Stretch",
+                                    items: aDocumentContainers
                                 }).addStyleClass("sapUiSmallMarginEnd")
                             ]
-
                         })
-
                     ],
 
-
                     beginButton: new Button({
-
                         text: "Accept",
-
                         type: "Emphasized",
-
                         icon: "sap-icon://accept",
-
-                        press:
-                            this._submitDecision
-                                .bind(
-                                    this,
-                                    "ACCEPTED"
-                                )
-
-                    }),
-
+                        press: this._submitDecision.bind( this, "ACCEPTED" ) }),
 
                     endButton: new Button({
-
                         text: "Decline",
-
                         type: "Reject",
-
                         icon: "sap-icon://decline",
-
-                        press:
-                            this._submitDecision
-                                .bind(
-                                    this,
-                                    "DECLINED"
-                                )
-
-                    })
-
+                        press: this._submitDecision.bind( this, "DECLINED" ) })
                 });
-
-
                 this._dialog.open();
             },
 
