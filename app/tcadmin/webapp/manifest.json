@@ -1,7 +1,7 @@
 {
   "_version": "1.86.0",
   "sap.app": {
-    "id": "com.hp.buysell.tcadmin.tcadmin",
+    "id": "hpbuysell.adm.tncmgmt.ui",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -62,7 +62,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "com.hp.buysell.tcadmin.tcadmin.i18n.i18n"
+          "bundleName": "hpbuysell.adm.tncmgmt.ui.i18n.i18n"
         }
       },
       "": {
@@ -96,9 +96,9 @@
           "target": "ActionLogObjectPage"
         },
         {
-          "name": "VersionsVersionsPage",
-          "pattern": "Versions({VersionsKey}):?query:",
-          "target": "VersionsVersionsPage"
+          "name": "VersionsObjectPage",
+          "pattern": "Versions({key}):?query:",
+          "target": "VersionsObjectPage"
         }
       ],
       "targets": {
@@ -118,7 +118,7 @@
                 },
                 "Versions": {
                   "detail": {
-                    "route": "VersionsVersionsPage"
+                    "route": "VersionsObjectPage"
                   }
                 }
               },
@@ -134,8 +134,8 @@
                   },
                   "actions": {
                     "CreateNewTCVersion": {
-                      "text": "Create New T&C Version",
-                      "press": "com.hp.buysell.tcadmin.tcadmin.ext.controller.ListReport.onCreateNewTCVersion",
+                      "text": "Upload T&C Version",
+                      "press": "hpbuysell.adm.tncmgmt.ui.ext.controller.ListReport.onCreateNewTCVersion",
                       "requiresSelection": false
                     }
                   }
@@ -178,15 +178,14 @@
             }
           }
         },
-        "VersionsVersionsPage": {
+        "VersionsObjectPage": {
           "type": "Component",
-          "id": "VersionsVersionsPage",
-          "name": "sap.fe.core.fpm",
+          "id": "VersionsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
           "options": {
             "settings": {
-              "navigation": {},
-              "contextPath": "/Versions",
-              "viewName": "com.hp.buysell.tcadmin.tcadmin.ext.view.Versions"
+              "editableHeaderContent": false,
+              "contextPath": "/Versions"
             }
           }
         }

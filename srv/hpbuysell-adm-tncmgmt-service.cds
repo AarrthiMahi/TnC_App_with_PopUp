@@ -1,4 +1,4 @@
-using com.hp.buysell.tc as tc from '../db/schema';
+using hpbuysell.adm.tncmgmt as tc from '../db/hpbuysell-adm-tncmgmt-model';
 
 service TCService @(path: '/tc') {
 
@@ -27,6 +27,7 @@ service TCService @(path: '/tc') {
     entity Changes   as projection on tc.ChangeLog;
 
     // Called by the login-time T&C popup.
+    @(requires: 'authenticated-user')
     function getApplicableTC()                         returns array of {
         tcType   : String;
         subTypes : array of {
@@ -44,18 +45,22 @@ service TCService @(path: '/tc') {
 
                             subTypes: array of {
         tcSubType      : String;
-        tcVersionId    : UUID;  
-        })                                                 
-        returns { queueRemaining : Boolean;
+        tcVersionId    : UUID;
+    })                                                 returns {
+        queueRemaining : Boolean;
     };
 
     @(requires: 'TC_Admin')
     action   uploadTCVersion(tcType: String,
                              tcSubType: String,
                              fileName: String,
-                             fileContent: LargeBinary) 
-        returns {
-            tcVersionId   : UUID;
-            versionNumber : String;
+                             fileContent: LargeBinary) returns {
+        tcVersionId   : UUID;
+        versionNumber : String;
+    };
+
+    @(requires: 'authenticated-user')
+    function getLoginSession()                         returns {
+        sessionKey : String;
     };
 }

@@ -1,16 +1,33 @@
 const cds = require('@sap/cds');
 const fs = require("fs/promises");
 const path = require("path");
+const crypto = require("crypto");
+
+
+/*
+ * Local mocked-auth does not have a real IAS login session.
+ * One temporary session ID is therefore created per CAP server run.
+ */
+const LOCAL_BOOT_SESSION_ID = crypto.randomUUID();
 
 module.exports = cds.service.impl(async function () {
 
-    const { TCVersionMaster, TCActionLog, ChangeLog } = cds.entities('com.hp.buysell.tc');
+    const { TCVersionMaster, TCActionLog, ChangeLog } = cds.entities('hpbuysell.adm.tncmgmt');
     const { SELECT, INSERT, UPSERT } = cds.ql;
 
     this.on('getApplicableTC', async (req) => {
 
         // User profile will come from IAS later
         const profile = req.user?.attr?.profile ?? {};
+
+        console.log("===== T&C USER =====",
+            {
+                id: req.user.id,
+                profile: req.user?.attr?.profile,
+                email: req.user?.attr?.email,
+                roles: req.user.roles
+            }
+        );
 
         //const { CUSTOMER, SUPPLIER, HP_USER } = profile;
 
@@ -157,7 +174,7 @@ module.exports = cds.service.impl(async function () {
                 await UPDATE(TCActionLog, existing.ID).with({
                     firstName,
                     lastName,
-                    
+
                     status: decision,
                     acceptedOn: now,
                     lastLoginDate: now
@@ -367,5 +384,82 @@ module.exports = cds.service.impl(async function () {
         });
 
         return { tcVersionId, versionNumber: nextVersion };
+    });
+
+    this.on("getLoginSession", async (req) => {
+
+        let sessionId = null;
+
+        /*
+         * Production: IAS / XSUAA authentication provides the JWT
+         * through req.user.authInfo.
+         */
+        const jwt = req.user?.authInfo?.token?.jwt;
+
+        if (jwt) {
+
+            try {
+
+                const parts = jwt.split(".");
+
+                if (parts.length === 3) {
+
+                    const payload =
+                        JSON.parse(
+                            Buffer
+                                .from(
+                                    parts[1],
+                                    "base64url"
+                                )
+                                .toString("utf8")
+                        );
+
+                    sessionId = payload.sid;
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Unable to read login session from JWT",
+                    error
+                );
+
+            }
+
+        }
+
+
+        /*
+         * LOCAL DEVELOPMENT FALLBACK
+         * Mocked Basic Auth has no IAS sid.
+         * This simulates one login session for the
+         * lifetime of the current cds watch process.
+         */
+        if (!sessionId) {
+
+            sessionId =
+                `${LOCAL_BOOT_SESSION_ID}:${req.user.id}`;
+
+        }
+
+
+        /*
+         * Do not expose the raw IAS session ID
+         * to the UI.
+         */
+        const sessionKey =
+            crypto
+                .createHash("sha256")
+                .update(
+                    `${req.user.id}:${sessionId}`
+                )
+                .digest("hex");
+
+
+        return {
+            sessionKey
+        };
+
     });
 });

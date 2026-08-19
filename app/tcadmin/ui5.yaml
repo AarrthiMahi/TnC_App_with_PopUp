@@ -2,7 +2,7 @@
 
 specVersion: "4.0"
 metadata:
-  name: com.hp.buysell.tcadmin.tcadmin
+  name: hpbuysell.adm.tncmgmt.ui
 type: application
 server:
   customMiddleware:

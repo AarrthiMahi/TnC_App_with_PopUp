@@ -2,7 +2,7 @@
   "_version": "1.80.0",
 
   "sap.app": {
-    "id": "com.hp.buysell.tcpopup",
+    "id": "hpbuysell.adm.tncmgmt.popup",
     "type": "application",
     "title": "Terms & Conditions"
   },
@@ -19,7 +19,7 @@
   "sap.ui5": {
 
     "rootView": {
-      "viewName": "com.hp.buysell.tcpopup.view.App",
+      "viewName": "hpbuysell.adm.tncmgmt.popup.view.App",
       "type": "XML",
       "async": true,
       "id": "app"

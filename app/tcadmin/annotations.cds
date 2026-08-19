@@ -1,4 +1,5 @@
-using TCService as service from '../../srv/tc-service';
+using TCService as service
+    from '../../srv/hpbuysell-adm-tncmgmt-service';
 
 annotate service.ActionLog with @(
     UI.FieldGroup #GeneratedGroup             : {

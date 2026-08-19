@@ -3,7 +3,7 @@ sap.ui.define([
 ], function (UIComponent) {
     "use strict";
 
-    return UIComponent.extend("com.hp.buysell.tcpopup.Component", {
+    return UIComponent.extend("hpbuysell.adm.tncmgmt.popup.Component", {
 
         metadata: {
             manifest: "json"

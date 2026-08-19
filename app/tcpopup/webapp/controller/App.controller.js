@@ -28,273 +28,147 @@ sap.ui.define([
     "use strict";
 
     return Controller.extend(
-        "com.hp.buysell.tcpopup.controller.App",
+        "hpbuysell.adm.tncmgmt.popup.controller.App",
         {
 
             onInit: function () {
+
                 this._queue = [];
                 this._queueIndex = 0;
 
-                this._loadTerms();
+                this._sessionKey = null;
+                this._sessionStorageKey = null;
+
+                this._initializeTCSession();
             },
 
-
-            _loadTerms: async function () {
+            _initializeTCSession: async function () {
 
                 try {
 
-                    const oResponse = await fetch(
-                        "/tc/getApplicableTC()",
-                        {
-                            credentials: "include"
-                        }
-                    );
+                    const oResponse = await fetch("/tc/getLoginSession()", { credentials: "include" });
 
                     if (!oResponse.ok) {
-                        throw new Error(
-                            "getApplicableTC failed"
-                        );
+                        throw new Error("Unable to determine login session");
                     }
 
                     const oData = await oResponse.json();
 
-                    this._queue = oData.value || [];
+                    this._sessionKey = oData.sessionKey;
 
-                    console.log(
-                        "Applicable T&C:",
-                        this._queue
-                    );
+                    this._sessionStorageKey = "hpbuysell.tncmgmt.completed." + this._sessionKey;
+
+
+                    /*
+                     * Same Work Zone login session already
+                     * completed T&C -> do not show again.
+                     */
+                    if (localStorage.getItem(this._sessionStorageKey) === "true") {
+                        console.log("T&C already completed for this login session.");
+                        return;
+                    }
+
+                    /* First time during this login session.*/
+                    this._loadTerms();
+                } catch (oError) { console.error("T&C session initialization failed:", oError); }
+            },
+
+            _markTCSessionCompleted: function () {
+
+                if (!this._sessionStorageKey) { return; }
+
+                localStorage.setItem(this._sessionStorageKey, "true");
+
+                console.log("T&C completed for current login session.");
+            },
+
+            _loadTerms: async function () {
+
+                try {
+                    const oResponse = await fetch("/tc/getApplicableTC()", { credentials: "include" });
+
+                    if (!oResponse.ok) { throw new Error("getApplicableTC failed"); }
+
+                    const oData = await oResponse.json();
+                    this._queue = oData.value || [];
+                    console.log("Applicable T&C:", this._queue);
 
                     if (!this._queue.length) {
-                        console.log(
-                            "No applicable T&C found."
-                        );
+                        console.log("No applicable T&C found.");
+
+                        this._markTCSessionCompleted();
                         return;
                     }
 
                     this._queueIndex = 0;
-
                     this._showCurrentTC();
 
                 } catch (oError) {
+                    console.error("T&C load error:", oError);
 
-                    console.error(
-                        "T&C load error:",
-                        oError
-                    );
-
-                    MessageBox.error(
-                        "Unable to load Terms & Conditions."
-                    );
+                    MessageBox.error("Unable to load Terms & Conditions.");
                 }
             },
 
-            _renderPdf: async function (
-                oSubType,
-                sContainerId
-            ) {
+            _renderPdf: async function (oSubType, sContainerId) {
 
                 try {
 
-                    const pdfjsLib =
-                        await import(
-                            "/tcpopup/webapp/vendor/pdfjs/pdf.mjs"
-                        );
+                    const pdfjsLib = await import("/tcpopup/webapp/vendor/pdfjs/pdf.mjs");
 
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = "/tcpopup/webapp/vendor/pdfjs/pdf.worker.mjs";
 
-                    pdfjsLib.GlobalWorkerOptions.workerSrc =
-                        "/tcpopup/webapp/vendor/pdfjs/pdf.worker.mjs";
-
-
-                    const oLoadingTask =
-                        pdfjsLib.getDocument({
-
-                            url:
-                                oSubType.documentPath,
-
-                            withCredentials:
-                                true
-
-                        });
-
-
-                    const oPdf =
-                        await oLoadingTask.promise;
-
-
-                    const oContainer =
-                        document.getElementById(
-                            sContainerId
-                        );
-
-
-                    if (!oContainer) {
-                        return;
-                    }
-
+                    const oLoadingTask = pdfjsLib.getDocument({ url: oSubType.documentPath, withCredentials: true });
+                    const oPdf = await oLoadingTask.promise;
+                    const oContainer = document.getElementById(sContainerId);
+                    if (!oContainer) { return; }
 
                     oContainer.innerHTML = "";
 
+                    /* Render every PDF page vertically.
+                     * There are NO browser PDF controls.*/
+                    for (let iPage = 1; iPage <= oPdf.numPages; iPage++) {
+                        const oPage = await oPdf.getPage(iPage);
+                        const oBaseViewport = oPage.getViewport({ scale: 1 });
 
-                    /*
-                     * Render every PDF page vertically.
-                     * There are NO browser PDF controls.
-                     */
-                    for (
-                        let iPage = 1;
-                        iPage <= oPdf.numPages;
-                        iPage++
-                    ) {
+                        /*Fit document to panel width.*/
+                        const iAvailableWidth = Math.max(oContainer.clientWidth - 4, 300);
+                        const fScale = iAvailableWidth / oBaseViewport.width;
 
-                        const oPage =
-                            await oPdf.getPage(
-                                iPage
-                            );
+                        const oViewport = oPage.getViewport({ scale: fScale });
+                        const oCanvas = document.createElement( "canvas" );
+                        const oContext = oCanvas.getContext( "2d" );
+                        const fOutputScale =  window.devicePixelRatio || 1;
 
+                        oCanvas.width =  Math.floor( oViewport.width * fOutputScale );
+                        oCanvas.height = Math.floor( oViewport.height * fOutputScale );
+                        oCanvas.style.width = Math.floor( oViewport.width ) + "px";
+                        oCanvas.style.height = Math.floor( oViewport.height ) + "px";
 
-                        const oBaseViewport =
-                            oPage.getViewport({
-                                scale: 1
-                            });
+                        /* Makes pages visually continuous.*/
+                        oCanvas.style.display = "block";
+                        oCanvas.style.margin = "0 auto";
+                        oCanvas.style.padding = "0";
+                        oCanvas.style.border = "none";
+                        oCanvas.style.background = "#ffffff";
+                        oContainer.appendChild( oCanvas );
 
+                        const aTransform = fOutputScale !== 1 ? [ fOutputScale, 0, 0, fOutputScale, 0, 0 ] : null;
 
-                        /*
-                         * Fit document to panel width.
-                         */
-                        const iAvailableWidth =
-                            Math.max(
-                                oContainer.clientWidth - 4,
-                                300
-                            );
-
-
-                        const fScale =
-                            iAvailableWidth /
-                            oBaseViewport.width;
-
-
-                        const oViewport =
-                            oPage.getViewport({
-                                scale: fScale
-                            });
-
-
-                        const oCanvas =
-                            document.createElement(
-                                "canvas"
-                            );
-
-
-                        const oContext =
-                            oCanvas.getContext(
-                                "2d"
-                            );
-
-
-                        const fOutputScale =
-                            window.devicePixelRatio ||
-                            1;
-
-
-                        oCanvas.width =
-                            Math.floor(
-                                oViewport.width *
-                                fOutputScale
-                            );
-
-
-                        oCanvas.height =
-                            Math.floor(
-                                oViewport.height *
-                                fOutputScale
-                            );
-
-
-                        oCanvas.style.width =
-                            Math.floor(
-                                oViewport.width
-                            ) +
-                            "px";
-
-
-                        oCanvas.style.height =
-                            Math.floor(
-                                oViewport.height
-                            ) +
-                            "px";
-
-
-                        /*
-                         * Makes pages visually continuous.
-                         */
-                        oCanvas.style.display =
-                            "block";
-
-                        oCanvas.style.margin =
-                            "0 auto";
-
-                        oCanvas.style.padding =
-                            "0";
-
-                        oCanvas.style.border =
-                            "none";
-
-                        oCanvas.style.background =
-                            "#ffffff";
-
-
-                        oContainer.appendChild(
-                            oCanvas
-                        );
-
-
-                        const aTransform =
-                            fOutputScale !== 1
-                                ? [
-                                    fOutputScale,
-                                    0,
-                                    0,
-                                    fOutputScale,
-                                    0,
-                                    0
-                                ]
-                                : null;
-
-
-                        await oPage.render({
-
-                            canvasContext:
-                                oContext,
-
-                            transform:
-                                aTransform,
-
-                            viewport:
-                                oViewport
-
+                        await oPage.render({ 
+                            canvasContext: oContext,
+                            transform: aTransform,
+                            viewport: oViewport
                         }).promise;
-
                     }
-
-                } catch (oError) {
-
-                    console.error(
-                        "PDF rendering failed:",
-                        oError
-                    );
-
-                }
-
+                } catch (oError) { console.error( "PDF rendering failed:",  oError ); }
             },
 
             _showCurrentTC: function () {
 
-                const oCurrent =
-                    this._queue[this._queueIndex];
+                const oCurrent = this._queue[this._queueIndex];
 
-                if (!oCurrent) {
-                    return;
-                }
+                if (!oCurrent) { return; }
 
                 const aDocumentContainers =
                     oCurrent.subTypes.map(
@@ -614,9 +488,7 @@ sap.ui.define([
                             },
 
                             body:
-                                JSON.stringify(
-                                    oPayload
-                                )
+                                JSON.stringify(oPayload)
                         }
                     );
 
@@ -657,16 +529,27 @@ sap.ui.define([
 
 
                     if (
-                        oResult.queueRemaining ===
-                        true
+                        oResult.queueRemaining === true
                     ) {
 
+                        /*
+                         * CS user:
+                         * SALES finished but PURCHASING remains.
+                         *
+                         * DO NOT mark the session complete yet.
+                         */
                         this._queueIndex++;
 
                         this._showCurrentTC();
 
                         return;
                     }
+
+
+                    /*
+                     * All applicable T&C completed.
+                     */
+                    this._markTCSessionCompleted();
 
 
                     MessageToast.show(

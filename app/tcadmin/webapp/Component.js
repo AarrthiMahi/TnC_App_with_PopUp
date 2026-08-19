@@ -3,7 +3,7 @@ sap.ui.define(
     function (Component) {
         "use strict";
 
-        return Component.extend("com.hp.buysell.tcadmin.tcadmin.Component", {
+        return Component.extend("hpbuysell.adm.tncmgmt.ui.Component", {
             metadata: {
                 manifest: "json"
             }

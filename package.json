@@ -1,5 +1,5 @@
 {
-  "name": "hp-buysell-tc",
+  "name": "hpbuysell-adm-tncmgmt-srv",
   "version": "1.0.0",
   "dependencies": {
     "@cap-js/postgres": "^3",
@@ -23,6 +23,10 @@
           "users": {
             "customer@test.com": {
               "password": "test",
+              "roles": [
+                "TC_Viewer",
+                "TC_Admin"
+              ],
               "attr": {
                 "profile": "C"
               }

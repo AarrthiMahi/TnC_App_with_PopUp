@@ -1,6 +1,6 @@
 using { cuid } from '@sap/cds/common';
 
-namespace com.hp.buysell.tc;
+namespace hpbuysell.adm.tncmgmt;
 
 // T&C Types
 type TCType : String(20) enum { PURCHASING; SALES; };
