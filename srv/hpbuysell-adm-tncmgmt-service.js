@@ -4,10 +4,8 @@ const path = require("path");
 const crypto = require("crypto");
 
 
-/*
- * Local mocked-auth does not have a real IAS login session.
- * One temporary session ID is therefore created per CAP server run.
- */
+/** Local mocked-auth does not have a real IAS login session.
+ * One temporary session ID is therefore created per CAP server run.*/
 const LOCAL_BOOT_SESSION_ID = crypto.randomUUID();
 
 module.exports = cds.service.impl(async function () {
@@ -28,8 +26,6 @@ module.exports = cds.service.impl(async function () {
                 roles: req.user.roles
             }
         );
-
-        //const { CUSTOMER, SUPPLIER, HP_USER } = profile;
 
         // HP internal users do not need T&C popup
         if (profile === 'HP') {
@@ -430,24 +426,14 @@ module.exports = cds.service.impl(async function () {
         }
 
 
-        /*
-         * LOCAL DEVELOPMENT FALLBACK
+        /** LOCAL DEVELOPMENT FALLBACK
          * Mocked Basic Auth has no IAS sid.
          * This simulates one login session for the
-         * lifetime of the current cds watch process.
-         */
+         * lifetime of the current cds watch process.*/
         if (!sessionId) {
-
             sessionId =
                 `${LOCAL_BOOT_SESSION_ID}:${req.user.id}`;
-
         }
-
-
-        /*
-         * Do not expose the raw IAS session ID
-         * to the UI.
-         */
         const sessionKey =
             crypto
                 .createHash("sha256")
@@ -455,8 +441,6 @@ module.exports = cds.service.impl(async function () {
                     `${req.user.id}:${sessionId}`
                 )
                 .digest("hex");
-
-
         return {
             sessionKey
         };
