@@ -8,10 +8,15 @@ const crypto = require("crypto");
  * One temporary session ID is therefore created per CAP server run.*/
 const LOCAL_BOOT_SESSION_ID = crypto.randomUUID();
 
+const SUBTYPES_BY_TYPE = {
+    SALES: ["CPT", "MTOU"],
+    PURCHASING: ["POTAC", "MTOU"]
+};
+
 module.exports = cds.service.impl(async function () {
 
     const { TCVersionMaster, TCActionLog, ChangeLog } = cds.entities('hpbuysell.adm.tncmgmt');
-    const { SELECT, INSERT, UPSERT } = cds.ql;
+    const { SELECT, INSERT, UPDATE } = cds.ql;
 
     this.on('getApplicableTC', async (req) => {
 
@@ -61,10 +66,14 @@ module.exports = cds.service.impl(async function () {
                     status: 'ACTIVE'
                 });
 
+            const subTypeOrder = SUBTYPES_BY_TYPE[tcType];
+
+            activeVersions.sort((a, b) => subTypeOrder.indexOf(a.tcSubTypeId) - subTypeOrder.indexOf(b.tcSubTypeId));
+
             result.push({
                 tcType,
                 subTypes: activeVersions.map(version => ({
-                    tcSubType: version.tcSubType,
+                    tcSubTypeId: version.tcSubTypeId,
                     tcVersionId: version.ID,
                     versionNumber: version.versionNumber,
                     documentPath: version.documentPath,
@@ -129,13 +138,27 @@ module.exports = cds.service.impl(async function () {
             return req.reject(400, 'At least one T&C Sub Type is required');
         }
 
+        const allowedSubTypes = SUBTYPES_BY_TYPE[tcType];
+        if (!allowedSubTypes) { return req.reject(400, "Invalid T&C Type"); }
+
+        for (const item of subTypes) {
+            if (!allowedSubTypes.includes(item.tcSubTypeId)
+            ) { return req.reject(400, `Invalid Sub Type ${item.tcSubTypeId} for ${tcType}`); }
+        }
+
+        const submittedIds = [...new Set(subTypes.map(item => item.tcSubTypeId))];
+        const containsAllRequired = allowedSubTypes.every(id => submittedIds.includes(id));
+        if (!containsAllRequired || submittedIds.length !== allowedSubTypes.length) {
+            return req.reject(400, "All applicable T&C Sub Types must be submitted together");
+        }
+
         /* TCActionLog only stores CUSTOMER or SUPPLIER.
         *  For CS users:
         * SALES      -> CUSTOMER
         * PURCHASING -> SUPPLIER    */
         const userProfile = tcType === 'SALES' ? 'CUSTOMER' : 'SUPPLIER';
 
-        for (const { tcSubType, tcVersionId } of subTypes) {
+        for (const { tcSubTypeId, tcVersionId } of subTypes) {
             // -----------------------------
             // 6. Validate version is ACTIVE
             // -----------------------------
@@ -144,12 +167,12 @@ module.exports = cds.service.impl(async function () {
                 .where({
                     ID: tcVersionId,
                     tcType,
-                    tcSubType,
+                    tcSubTypeId,
                     status: 'ACTIVE'
                 });
 
             if (!activeVersion) {
-                return req.reject(409, `T&C version is no longer active for ${tcSubType}`);
+                return req.reject(409, `T&C version is no longer active for ${tcSubTypeId}`);
             }
 
             // -----------------------------
@@ -160,7 +183,7 @@ module.exports = cds.service.impl(async function () {
                 .where({
                     userEmailId: userEmail,
                     tcType,
-                    tcSubType,
+                    tcSubTypeId,
                     tcVersion_ID: tcVersionId
                 });
 
@@ -185,7 +208,7 @@ module.exports = cds.service.impl(async function () {
                     lastName,
                     userProfile,
                     tcType,
-                    tcSubType,
+                    tcSubTypeId,
                     tcVersion_ID: tcVersionId,
                     status: decision,
                     acceptedOn: now,
@@ -210,7 +233,7 @@ module.exports = cds.service.impl(async function () {
 
     this.on('uploadTCVersion', async (req) => {
 
-        const { tcType, tcSubType, fileName, fileContent } = req.data;
+        const { tcType, tcSubTypeId, fileName, fileContent } = req.data;
 
         const adminId = req.user.id;
         const adminEmail = req.user?.attr?.email || adminId;
@@ -220,13 +243,9 @@ module.exports = cds.service.impl(async function () {
         // -----------------------------
         // 1. Validate Type / Sub Type
         // -----------------------------
-        const validCombinations = {
-            SALES: ['CUSTOMER_PORTFOLIO_TERMS', 'MARKETPLACE_TERMS_OF_USE'],
-            PURCHASING: ['POTAC', 'MARKETPLACE_TERMS_OF_USE']
-        };
-
-        if (!validCombinations[tcType] || !validCombinations[tcType].includes(tcSubType)) {
-            return req.reject(400, 'Invalid T&C Type / Sub Type combination');
+        const allowedSubTypes = SUBTYPES_BY_TYPE[tcType];
+        if ( !allowedSubTypes || !allowedSubTypes.includes( tcSubTypeId ) ) {
+            return req.reject( 400, "Invalid T&C Type / Sub Type combination" );
         }
 
         // -----------------------------
@@ -242,7 +261,7 @@ module.exports = cds.service.impl(async function () {
         const existingVersions = await SELECT
             .from(TCVersionMaster)
             .columns('versionNumber')
-            .where({ tcType, tcSubType });
+            .where({ tcType, tcSubTypeId });
 
         const highestVersion = existingVersions.reduce(
             (highest, row) => {
@@ -259,7 +278,7 @@ module.exports = cds.service.impl(async function () {
             .from(TCVersionMaster)
             .where({
                 tcType,
-                tcSubType,
+                tcSubTypeId,
                 status: 'ACTIVE'
             });
 
@@ -277,7 +296,7 @@ module.exports = cds.service.impl(async function () {
                 adminEmail,
                 actionType: 'ARCHIVE_TC',
                 tcType,
-                tcSubType,
+                tcSubTypeId,
                 versionNumber: currentActive.versionNumber,
                 actionTimestamp: now,
                 details:
@@ -287,9 +306,6 @@ module.exports = cds.service.impl(async function () {
 
         // -----------------------------
         // 6. Temporary document path
-        // -----------------------------
-        //const documentPath = `pending-object-store/${tcType}/${tcSubType}/${nextVersion}/${fileName}`;
-        // -------------------------------------
         // LOCAL DEV FILE STORE
         // Replace with BTP Object Store later
         // -------------------------------------
@@ -300,7 +316,7 @@ module.exports = cds.service.impl(async function () {
             path.join(
                 "documents",
                 tcType,
-                tcSubType,
+                tcSubTypeId,
                 nextVersion
             );
 
@@ -339,7 +355,7 @@ module.exports = cds.service.impl(async function () {
                 "webapp",
                 "documents",
                 tcType,
-                tcSubType,
+                tcSubTypeId,
                 nextVersion,
                 safeFileName
             );
@@ -354,7 +370,7 @@ module.exports = cds.service.impl(async function () {
 
             ID: tcVersionId,
             tcType,
-            tcSubType,
+            tcSubTypeId,
             versionNumber: nextVersion,
             effectiveDate: now,
             documentPath,
@@ -373,7 +389,7 @@ module.exports = cds.service.impl(async function () {
             adminEmail,
             actionType: 'UPLOAD_TC',
             tcType,
-            tcSubType,
+            tcSubTypeId,
             versionNumber: nextVersion,
             actionTimestamp: now,
             details: `${fileName} uploaded`

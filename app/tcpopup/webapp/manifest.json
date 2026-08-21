@@ -1,12 +1,10 @@
 {
   "_version": "1.80.0",
-
   "sap.app": {
     "id": "hpbuysell.adm.tncmgmt.popup",
     "type": "application",
     "title": "Terms & Conditions"
   },
-
   "sap.ui": {
     "technology": "UI5",
     "deviceTypes": {
@@ -15,22 +13,27 @@
       "phone": true
     }
   },
-
   "sap.ui5": {
-
     "rootView": {
       "viewName": "hpbuysell.adm.tncmgmt.popup.view.App",
       "type": "XML",
       "async": true,
       "id": "app"
     },
-
     "dependencies": {
       "libs": {
         "sap.m": {},
         "sap.ui.core": {}
       }
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "hpbuysell.adm.tncmgmt.popup.i18n.i18n",
+          "async": true
+        }
+      }
     }
-
   }
 }

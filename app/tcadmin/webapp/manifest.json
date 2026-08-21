@@ -128,7 +128,7 @@
                     "type": "ResponsiveTable"
                   }
                 },
-                "/Versions/@com.sap.vocabularies.UI.v1.LineItem#tableView": {
+                "/Versions/@com.sap.vocabularies.UI.v1.LineItem#versionsView": {
                   "tableSettings": {
                     "type": "ResponsiveTable"
                   },
@@ -139,28 +139,18 @@
                       "requiresSelection": false
                     }
                   }
-                },
-                "/Changes/@com.sap.vocabularies.UI.v1.LineItem#changeLogView": {
-                  "tableSettings": {
-                    "type": "ResponsiveTable"
-                  }
                 }
               },
               "views": {
                 "paths": [
                   {
-                    "key": "tableView",
+                    "key": "actionLogView",
                     "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#tableView"
                   },
                   {
-                    "key": "tableView1",
-                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#tableView",
+                    "key": "versionsView",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#versionsView",
                     "entitySet": "Versions"
-                  },
-                  {
-                    "key": "changeLogView",
-                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#changeLogView",
-                    "entitySet": "Changes"
                   }
                 ]
               }

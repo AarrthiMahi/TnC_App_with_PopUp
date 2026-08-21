@@ -53,12 +53,12 @@ sap.ui.define([
                 if (sType === "SALES") {
 
                     oSubType.addItem(new Item({
-                        key: "CUSTOMER_PORTFOLIO_TERMS",
+                        key: "CPT",
                         text: "Customer Portfolio Terms"
                     }));
 
                     oSubType.addItem(new Item({
-                        key: "MARKETPLACE_TERMS_OF_USE",
+                        key: "MTOU",
                         text: "Marketplace Terms of Use"
                     }));
 
@@ -66,11 +66,11 @@ sap.ui.define([
 
                     oSubType.addItem(new Item({
                         key: "POTAC",
-                        text: "POTAC"
+                        text: "Purchase Order Terms And Conditions"
                     }));
 
                     oSubType.addItem(new Item({
-                        key: "MARKETPLACE_TERMS_OF_USE",
+                        key: "MTOU",
                         text: "Marketplace Terms of Use"
                     }));
                 }
@@ -207,7 +207,7 @@ sap.ui.define([
                                         tcType:
                                             oType.getSelectedKey(),
 
-                                        tcSubType:
+                                        tcSubTypeId:
                                             oSubType.getSelectedKey(),
 
                                         fileName:
